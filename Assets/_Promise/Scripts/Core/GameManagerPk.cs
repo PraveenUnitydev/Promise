@@ -13,7 +13,7 @@ public class GameManagerPk : MonoBehaviour
     {
         if (SceneManager.GetActiveScene().name == "MainMenu")
             return;
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (GameInput.PausePressed)
         {
             if (!_isPaused)
             {

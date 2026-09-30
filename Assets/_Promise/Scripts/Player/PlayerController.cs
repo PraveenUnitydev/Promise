@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour
     [Range(0, 1)] [SerializeField] private float m_CrouchSpeed = .36f;          // Amount of maxSpeed applied to crouching movement. 1 = 100%
     [Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;  // How much to smooth out the movement
     [SerializeField] private bool m_AirControl = false;                         // Whether or not a player can steer while jumping;
+    [Range(0, .5f)] [SerializeField] private float m_AirMovementSmoothing = .15f; // Smoothing while airborne; higher keeps more momentum
+    [Range(0, 1)] [SerializeField] private float m_JumpCutMultiplier = .5f;     // Upward speed kept when jump is released early (variable jump height)
     [SerializeField] private LayerMask m_WhatIsGround;                          // A mask determining what is ground to the character
     [SerializeField] private Transform m_GroundCheck;                           // A position marking where to check if the player is grounded.
     [SerializeField] private Transform m_CeilingCheck;                          // A position marking where to check for ceilings
@@ -18,6 +20,7 @@ public class PlayerController : MonoBehaviour
     private float jumpLockCounter;                                              // Ignores ground contact just after a jump so it can't retrigger.
     const float k_JumpLockTime = .15f;
     private PlayerMovement m_Movement;
+    private bool m_JumpRising;                                                  // True from a jump until the player starts falling or releases jump.
 
     const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
     public bool m_Grounded;            // Whether or not the player is grounded.
@@ -119,8 +122,10 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    public void Move(float move, bool crouch, bool jump)
+    /// <summary>Applies movement for this physics step. Returns true if a jump started.</summary>
+    public bool Move(float move, bool crouch, bool jump, bool jumpHeld = true)
     {
+        bool jumped = false;
         // If crouching, check to see if the character can stand up
         if (!crouch)
         {
@@ -169,7 +174,8 @@ public class PlayerController : MonoBehaviour
 
             Vector3 targetVelocity = new Vector2(move * 10f, m_Rigidbody2D.linearVelocity.y);
             // And then smoothing it out and applying it to the character
-            m_Rigidbody2D.linearVelocity = Vector3.SmoothDamp(m_Rigidbody2D.linearVelocity, targetVelocity, ref m_Velocity, m_MovementSmoothing);
+            float smoothing = m_Grounded ? m_MovementSmoothing : m_AirMovementSmoothing;
+            m_Rigidbody2D.linearVelocity = Vector3.SmoothDamp(m_Rigidbody2D.linearVelocity, targetVelocity, ref m_Velocity, smoothing);
             
             // If the input is moving the player right and the player is facing left...
             if (move > 0 && !m_FacingRight)
@@ -196,8 +202,23 @@ public class PlayerController : MonoBehaviour
             m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
             coyoteTimeCounter = 0f;
             jumpLockCounter = k_JumpLockTime;
-          
+            m_JumpRising = true;
+            jumped = true;
         }
+        // Variable jump height: releasing jump while still rising cuts the jump short (once per jump).
+        else if (m_JumpRising)
+        {
+            if (m_Rigidbody2D.linearVelocity.y <= 0f)
+            {
+                m_JumpRising = false;
+            }
+            else if (!jumpHeld)
+            {
+                m_Rigidbody2D.linearVelocity = new Vector2(m_Rigidbody2D.linearVelocity.x, m_Rigidbody2D.linearVelocity.y * m_JumpCutMultiplier);
+                m_JumpRising = false;
+            }
+        }
+        return jumped;
     }
 
 

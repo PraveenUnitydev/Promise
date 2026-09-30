@@ -15,7 +15,7 @@ public class MenuButton : MonoBehaviour
 		if (menuController.index == thisIndex)
 		{
 			animator.SetBool("Selected", true);
-			if (Input.GetAxis("Submit") == 1)
+			if (GameInput.SubmitPressed)
 			{
 				animatorFunctions.ButtonsClicked();
 				animator.SetBool("Clicked", true);	

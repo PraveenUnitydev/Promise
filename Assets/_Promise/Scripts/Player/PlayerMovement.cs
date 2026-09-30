@@ -1,5 +1,3 @@
-﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -15,12 +13,17 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] ParticleSystem _launchParticle;
 
+    [Tooltip("A jump pressed this long before landing still happens on landing.")]
+    [SerializeField] float _jumpBufferTime = 0.15f;
+
     public bool _freezeLeft;
     public bool _freezeRight;
 
     public bool _freeze = false;
 
-    bool _jump = false;
+    float _jumpBufferCounter;
+    bool _jumpHeld;
+
     private void Start()
     {
         _controller = GetComponent<PlayerController>();
@@ -34,18 +37,20 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!GameManagerPk._isPaused && !_freeze)
         {
-            horizontalMove = Input.GetAxisRaw("Horizontal");
+            horizontalMove = GameInput.MoveX;
+            _jumpHeld = GameInput.JumpHeld;
 
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                _jump = true;
-            }
+            if (GameInput.JumpPressed)
+                _jumpBufferCounter = _jumpBufferTime;
+            else
+                _jumpBufferCounter -= Time.deltaTime;
         }
         else
         {
             // Stop instead of carrying the last input while paused or frozen.
             horizontalMove = 0;
-            _jump = false;
+            _jumpHeld = false;
+            _jumpBufferCounter = 0f;
         }
 
         UpdateAnimation();
@@ -73,8 +78,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        _controller.Move(horizontalMove, false, _jump);
-        _jump = false;
+        bool jumped = _controller.Move(horizontalMove, false, _jumpBufferCounter > 0f, _jumpHeld);
+        if (jumped)
+            _jumpBufferCounter = 0f;
     }
     void Launch()
     {

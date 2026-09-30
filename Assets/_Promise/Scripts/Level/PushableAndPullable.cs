@@ -18,7 +18,7 @@ public class PushableAndPullable : MonoBehaviour
 	{
         Physics2D.queriesStartInColliders = false;
 		RaycastHit2D hit = Physics2D.Raycast(rayPushable.position, Vector2.right * transform.localScale.x, distance, boxMask);
-		if (hit.collider != null&&Input.GetButtonDown("Fire1")&&!dragged)
+		if (hit.collider != null&&GameInput.GrabPressed&&!dragged)
 		{
             dragged = true;
 			box = hit.collider.gameObject;
@@ -30,7 +30,7 @@ public class PushableAndPullable : MonoBehaviour
             Debug.Log("Grabbing");
            // ChangeSide(changeSide);
 		}
-        else if (Input.GetButtonUp("Fire1")&&dragged)
+        else if (!GameInput.GrabHeld&&dragged)
         {
             dragged = false;
             box.GetComponent<FixedJoint2D>().connectedBody = null;

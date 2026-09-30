@@ -17,11 +17,11 @@ public class MenuController : MonoBehaviour
 
     private void Update()
 	{
-		if (Input.GetAxis("Vertical") != 0)
+		if (GameInput.Navigate.y != 0)
 		{
 			if (!keyDown)
 			{
-				if (Input.GetAxis("Vertical") < 0)
+				if (GameInput.Navigate.y < 0)
 				{
 					if (index < maxIndex)
 					{
@@ -31,7 +31,7 @@ public class MenuController : MonoBehaviour
 					{
 						index = 0;
 					}
-				}else if (Input.GetAxis("Vertical") > 0)
+				}else if (GameInput.Navigate.y > 0)
 				{
 					if (index > 0)
 					{
