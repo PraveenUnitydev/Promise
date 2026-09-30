@@ -113,13 +113,33 @@ public class PlayerAnimationController : MonoBehaviour
             state = State.WAITING;
         }
     }
-    public void Jump()
+    [Header("Jump")]
+    [Tooltip("Vertical speed that maps to the start (rising) or end (falling) of the Jump clip. Roughly Blacky's take-off speed.")]
+    [SerializeField] float _jumpVelocityRange = 12f;
+    [Tooltip("Point in the Jump clip (0-1) shown at the top of the arc.")]
+    [Range(0, 1)] [SerializeField] float _jumpApexProgress = 0.5f;
+    DragonBones.AnimationState _jumpState;
+
+    // The single Jump clip is shorter than a real jump, so instead of playing it we scrub it by vertical speed:
+    // rising shows the first half, the apex the middle, falling the second half. It holds as long as Blacky is airborne.
+    public void Jump(float verticalVelocity)
     {
         if (state != State.JUMP)
         {
             PlayerAn.animation.timeScale = 1f;
-            PlayerAn.animation.FadeIn("Jump", .1f, 1, 0);
+            _jumpState = PlayerAn.animation.FadeIn("Jump", .1f, 1, 0);
+            if (_jumpState != null)
+                _jumpState.timeScale = 0f;
             state = State.JUMP;
+        }
+
+        if (_jumpState != null)
+        {
+            float v = Mathf.Clamp(verticalVelocity / _jumpVelocityRange, -1f, 1f);
+            float progress = v > 0f
+                ? Mathf.Lerp(_jumpApexProgress, 0f, v)
+                : Mathf.Lerp(_jumpApexProgress, 1f, -v);
+            _jumpState.currentTime = Mathf.Min(progress * _jumpState.totalTime, _jumpState.totalTime - 0.001f);
         }
     }
     public void Jumpo()

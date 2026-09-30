@@ -24,6 +24,10 @@ public class PlayerMovement : MonoBehaviour
     float _jumpBufferCounter;
     bool _jumpHeld;
 
+    bool _airborne;
+    float _airTime;
+    const float k_AirborneDelay = 0.1f;
+
     private void Start()
     {
         _controller = GetComponent<PlayerController>();
@@ -61,10 +65,26 @@ public class PlayerMovement : MonoBehaviour
         if (anim == null)
             return;
 
-        // Ignore tiny vertical motion so bumps and slope edges don't flicker into the jump pose.
-        if (!_controller.m_Grounded && Mathf.Abs(_controller.m_Rigidbody2D.linearVelocity.y) > 0.5f)
+        float vy = _controller.m_Rigidbody2D.linearVelocity.y;
+
+        // Enter the air pose only on real vertical motion or after a moment off the ground, so bumps and slope
+        // edges don't flicker into it. Once airborne, stay there until landing: at the top of the arc vy is ~0,
+        // and dropping out of the air pose there is what made Run and Jump play over each other.
+        if (_controller.m_Grounded)
         {
-            anim.Jump();
+            _airTime = 0f;
+            _airborne = false;
+        }
+        else
+        {
+            _airTime += Time.deltaTime;
+            if (Mathf.Abs(vy) > 0.5f || _airTime > k_AirborneDelay)
+                _airborne = true;
+        }
+
+        if (_airborne)
+        {
+            anim.Jump(vy);
         }
         else if (horizontalMove != 0 && !_freezeLeft && !_freezeRight)
         {

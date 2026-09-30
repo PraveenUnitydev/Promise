@@ -45,28 +45,18 @@ namespace Foliage
                     foliage2D.widthSegments = Mathf.Clamp(EditorGUILayout.IntField(new GUIContent("With Segments", "The number of columns the mesh has."), foliage2D.widthSegments), 1, 100);
                     foliage2D.heightSegments = Mathf.Clamp(EditorGUILayout.IntField(new GUIContent("Height Segments", "The number of rows the mesh has."), foliage2D.heightSegments), 1, 100);
 
-                    Type utility = Type.GetType("UnityEditorInternal.InternalEditorUtility, UnityEditor");
-                    if (utility != null)
-                    {
-                        PropertyInfo sortingLayerNames = utility.GetProperty("sortingLayerNames", BindingFlags.Static | BindingFlags.NonPublic);
-                        if (sortingLayerNames != null)
-                        {
-                            string[] layerNames = sortingLayerNames.GetValue(null, null) as string[];
-                            string currName = foliage2D.GetComponent<Renderer>().sortingLayerName == "" ? "Default" : foliage2D.GetComponent<Renderer>().sortingLayerName;
-                            int nameID = EditorGUILayout.Popup("Sorting Layer", Array.IndexOf(layerNames, currName), layerNames);
-
-                            foliage2D.GetComponent<Renderer>().sortingLayerName = layerNames[nameID];
-
-                        }
-                        else
-                        {
-                            foliage2D.GetComponent<Renderer>().sortingLayerID = EditorGUILayout.IntField("Sorting Layer", foliage2D.GetComponent<Renderer>().sortingLayerID);
-                        }
-                    }
-                    else
-                    {
-                        foliage2D.GetComponent<Renderer>().sortingLayerID = EditorGUILayout.IntField("Sorting Layer", foliage2D.GetComponent<Renderer>().sortingLayerID);
-                    }
+                    // Promise patch: use the public SortingLayer API. The old reflection lookup of
+                    // InternalEditorUtility.sortingLayerNames fell back to a raw ID field, which let renderers
+                    // end up on sorting layer IDs that no longer exist.
+                    Renderer foliageRenderer = foliage2D.GetComponent<Renderer>();
+                    SortingLayer[] layers = SortingLayer.layers;
+                    string[] layerNames = Array.ConvertAll(layers, l => l.name);
+                    int current = Array.FindIndex(layers, l => l.id == foliageRenderer.sortingLayerID);
+                    if (current < 0)
+                        EditorGUILayout.HelpBox("Sorting layer ID " + foliageRenderer.sortingLayerID + " doesn't exist. Pick a layer.", MessageType.Warning);
+                    int picked = EditorGUILayout.Popup("Sorting Layer", current, layerNames);
+                    if (picked >= 0 && picked != current)
+                        foliageRenderer.sortingLayerID = layers[picked].id;
                     foliage2D.GetComponent<Renderer>().sortingOrder = EditorGUILayout.IntField("Order in Layer", foliage2D.GetComponent<Renderer>().sortingOrder);
                 });
             }
