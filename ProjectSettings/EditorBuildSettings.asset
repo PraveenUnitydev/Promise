@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 0b9ed852d403d1e449c2e81714e9818f
+  - enabled: 1
+    path: Assets/Scenes/Mountain/MountainLevel1.unity
+    guid: 3a4c131741536c241a6dcbc23f0f97aa
+  - enabled: 1
+    path: Assets/Scenes/Mountain/MountainLevel2.unity
+    guid: d3ddda0dd1c601e4087ac8654bca290f
+  - enabled: 1
+    path: Assets/Scenes/Mountain/MountainLevel3.unity
+    guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/Mountain/MountainLevel4.unity
+    guid: bd2cedd9a4254cd4e9957b829e6ebef5
+  - enabled: 0
+    path: Assets/Scenes/Mountain/MountainLevel5.unity
+    guid: ace29ee243ce9b748bebdcc00aa77570
+  - enabled: 1
+    path: Assets/Scenes/Mountain/MountainLevel6.unity
+    guid: 285396222309ed74d95c48df40f45f3f
+  - enabled: 1
+    path: Assets/Scenes/Mountain/MountainLevel7.unity
+    guid: dddcb5a4723f9b34eaca9cbe161d670c
+  - enabled: 0
+    path: Assets/Scenes/Mountain/0.unity
+    guid: 28beae3404a7e404b8fcb335d355e422
+  - enabled: 1
+    path: Assets/Scenes/Level4.unity
+    guid: 0a9a8bc6b1101bb4b9c5e49e2259c2f8
+  - enabled: 1
+    path: Assets/Scenes/Level5.unity
+    guid: 6262ee47f2537224aa4af2ec8d21186d
+  - enabled: 1
+    path: Assets/Scenes/Level7.unity
+    guid: 1bc80e5de5c0bf144b089e75ef248b9a
+  - enabled: 0
+    path: Assets/Scenes/ThankYouScene.unity
+    guid: f013b691fef80034d936e9c987e9920b
+  m_configObjects: {}
