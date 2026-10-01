@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Promise/Scenes/Dev/Sandbox.unity
     guid: 0a9a8bc6b1101bb4b9c5e49e2259c2f8
+  - enabled: 1
+    path: Assets/_Promise/Scenes/Dev/SystemsTest.unity
+    guid: 6778561e35a3b90438b368f523dfc5cd
   m_configObjects: {}

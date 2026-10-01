@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour
     const float k_CeilingRadius = .2f; // Radius of the overlap circle to determine if the player can stand up
     public Rigidbody2D m_Rigidbody2D;
     public bool m_FacingRight = true;  // For determining which way the player is currently facing.
+    [HideInInspector] public bool m_LockFacing; // Set while holding a box so pulling doesn't turn the player around.
     private Vector3 m_Velocity = Vector3.zero;
     [SerializeField] float distance = 3f;
     Vector2 _directionFacing;
@@ -178,14 +179,14 @@ public class PlayerController : MonoBehaviour
             m_Rigidbody2D.linearVelocity = Vector3.SmoothDamp(m_Rigidbody2D.linearVelocity, targetVelocity, ref m_Velocity, smoothing);
             
             // If the input is moving the player right and the player is facing left...
-            if (move > 0 && !m_FacingRight)
+            if (move > 0 && !m_FacingRight && !m_LockFacing)
             {
                 // ... flip the player.
                 Flip();
               
             }
             // Otherwise if the input is moving the player left and the player is facing right...
-            else if (move < 0 && m_FacingRight)
+            else if (move < 0 && m_FacingRight && !m_LockFacing)
             {
                 // ... flip the player.
                 Flip();
@@ -233,8 +234,19 @@ public class PlayerController : MonoBehaviour
         theScale.x *= -1;
         transform.localScale = theScale;
     }
+    /// <summary>Stops all motion and clears jump state (used on death and respawn).</summary>
+    public void ResetMotion()
+    {
+        if (m_Rigidbody2D.bodyType != RigidbodyType2D.Static)
+            m_Rigidbody2D.linearVelocity = Vector2.zero;
+        m_Velocity = Vector3.zero;
+        m_JumpRising = false;
+        jumpLockCounter = 0f;
+        coyoteTimeCounter = 0f;
+    }
+
     private void OnDrawGizmos()
     {
-        
+
     }
 }

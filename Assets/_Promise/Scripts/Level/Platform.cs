@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using MyBox;
-public class Platform:MonoBehaviour
+// Driven by SignalSources (switches, plates): On follows the signal. Falling platforms trigger on contact instead.
+public class Platform : SignalReceiver
 {
 	public bool On;
 	/// <summary>
@@ -103,6 +104,58 @@ public class Platform:MonoBehaviour
 	void FallPlatform()
 	{
 		gameObject.transform.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
+	}
+
+	protected override void OnSignalChanged(bool on)
+	{
+		On = on;
+	}
+
+	// Respawn rewind
+	bool _savedOn;
+	Vector3 _savedPosition;
+	Quaternion _savedRotation;
+	Vector3 _savedNextPos;
+	RigidbodyType2D _savedBodyType;
+	bool _savedPlatfActive;
+
+	public override void CaptureState()
+	{
+		base.CaptureState();
+		_savedOn = On;
+		_savedPosition = transform.position;
+		_savedRotation = transform.rotation;
+		_savedNextPos = nextPos;
+		var body = GetComponent<Rigidbody2D>();
+		if (body != null)
+			_savedBodyType = body.bodyType;
+		if (Platf != null)
+			_savedPlatfActive = Platf.activeSelf;
+	}
+
+	public override void RestoreState()
+	{
+		base.RestoreState();
+		CancelInvoke(nameof(FallPlatform));
+		On = _savedOn;
+		nextPos = _savedNextPos;
+		transform.SetPositionAndRotation(_savedPosition, _savedRotation);
+		var body = GetComponent<Rigidbody2D>();
+		if (body != null)
+		{
+			body.bodyType = _savedBodyType;
+			body.position = _savedPosition;
+			body.rotation = _savedRotation.eulerAngles.z;
+			if (_savedBodyType != RigidbodyType2D.Static)
+			{
+				body.linearVelocity = Vector2.zero;
+				body.angularVelocity = 0f;
+			}
+		}
+		if (Platf != null)
+			Platf.SetActive(_savedPlatfActive);
+		if (platformType == PlatformType.Falling && animator != null)
+			animator.SetBool("Shake", false);
 	}
 	private void OnTriggerEnter2D(Collider2D collision)
 	{

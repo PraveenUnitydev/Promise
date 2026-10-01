@@ -3,6 +3,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     private PlayerController _controller;
+    private PushableAndPullable _grab;
     // Blacky is rigged with DragonBones, so animation goes through PlayerAnimationController, not an Animator.
     // The prefab already references the PlayerAnimationController component in this field.
     [SerializeField] PlayerAnimationController anim;
@@ -15,6 +16,8 @@ public class PlayerMovement : MonoBehaviour
 
     [Tooltip("A jump pressed this long before landing still happens on landing.")]
     [SerializeField] float _jumpBufferTime = 0.15f;
+    [Tooltip("Speed multiplier while pushing or pulling a box.")]
+    [Range(0, 1)] [SerializeField] float _grabSpeedMultiplier = 0.45f;
 
     public bool _freezeLeft;
     public bool _freezeRight;
@@ -28,9 +31,12 @@ public class PlayerMovement : MonoBehaviour
     float _airTime;
     const float k_AirborneDelay = 0.1f;
 
+    bool IsGrabbing => _grab != null && _grab.IsGrabbing;
+
     private void Start()
     {
         _controller = GetComponent<PlayerController>();
+        _grab = GetComponent<PushableAndPullable>();
         if (anim == null)
             anim = GetComponent<PlayerAnimationController>();
         GameManagerPk._isPaused = false;
@@ -56,6 +62,11 @@ public class PlayerMovement : MonoBehaviour
             _jumpHeld = false;
             _jumpBufferCounter = 0f;
         }
+
+        // No jumping while holding a box, and keep facing it so pulling doesn't turn Blacky around.
+        _controller.m_LockFacing = IsGrabbing;
+        if (IsGrabbing)
+            _jumpBufferCounter = 0f;
 
         UpdateAnimation();
     }
@@ -86,6 +97,13 @@ public class PlayerMovement : MonoBehaviour
         {
             anim.Jump(vy);
         }
+        else if (IsGrabbing)
+        {
+            if (horizontalMove != 0)
+                anim.PushOrPull(horizontalMove);
+            else
+                anim.PushOrPullHold();
+        }
         else if (horizontalMove != 0 && !_freezeLeft && !_freezeRight)
         {
             anim.Run();
@@ -98,7 +116,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        bool jumped = _controller.Move(horizontalMove, false, _jumpBufferCounter > 0f, _jumpHeld);
+        float move = IsGrabbing ? horizontalMove * _grabSpeedMultiplier : horizontalMove;
+        bool jumped = _controller.Move(move, false, _jumpBufferCounter > 0f, _jumpHeld);
         if (jumped)
             _jumpBufferCounter = 0f;
     }

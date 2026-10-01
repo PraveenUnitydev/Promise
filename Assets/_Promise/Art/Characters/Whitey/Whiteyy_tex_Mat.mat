@@ -21,8 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Whiteyy_tex_Mat
-  m_Shader: {fileID: -6465566751694194690, guid: ef885e457dd5818429faf508b515f204,
-    type: 3}
+  m_Shader: {fileID: 4800000, guid: 46d25640da3419f42966750e247b8ff2, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -60,13 +59,15 @@ Material:
     m_Ints: []
     m_Floats:
     - PixelSnap: 0
+    - _EdgeWidth: 0.04
     - _EnableExternalAlpha: 0
     - _Fade: 1
     - _Scale: 40
     m_Colors:
     - Color_7A0CCA10: {r: 1.3769758, g: 1.0587125, b: 1.1269118, a: 1}
     - White: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1.3769758, g: 1.0587125, b: 1.1269118, a: 1}
+    - _EdgeColor: {r: 2, g: 1.8, b: 1.6, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

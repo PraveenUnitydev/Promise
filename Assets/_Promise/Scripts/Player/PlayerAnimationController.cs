@@ -187,6 +187,10 @@ public class PlayerAnimationController : MonoBehaviour
       public void PushOrPull(float grab)
       {
           PlayerAn.animation.timeScale = .75f;
+          // Resume a clip paused by PushOrPullHold.
+          var current = PlayerAn.animation.lastAnimationState;
+          if (current != null)
+              current.timeScale = 1f;
           if (characterController.m_FacingRight==true)
           {
               if (grab > 0)
@@ -225,5 +229,20 @@ public class PlayerAnimationController : MonoBehaviour
           }
 
       }
+
+    // Holding a box without moving: freeze the push/pull pose instead of dropping to Idle.
+    public void PushOrPullHold()
+    {
+        if (state != State.PUSH && state != State.PULL)
+        {
+            PlayerAn.animation.FadeIn("Push", .25f, -1, 0);
+            state = State.PUSH;
+        }
+        // Pause only the current clip, so a fade into it still finishes.
+        PlayerAn.animation.timeScale = 1f;
+        var current = PlayerAn.animation.lastAnimationState;
+        if (current != null)
+            current.timeScale = 0f;
+    }
 
 }

@@ -13,16 +13,10 @@ public class LevelChanger : MonoBehaviour
 	private int levelToLoad;
 	private void Awake()
 	{
-		if (instance == null)
-		{
-			instance = this;
-			DontDestroyOnLoad(gameObject);
-		}
-		else if (instance != this)
-		{
-			Destroy(gameObject);
-		}
-		
+		// One per level (it lives in GameManager.prefab); each scene's copy plays its own fade-in.
+		// It used to call DontDestroyOnLoad, but it sits on a child object where that has no effect.
+		instance = this;
+
 		animator = GetComponent<Animator>();
 		Debug.Log("Total scenes " + SceneManager.sceneCountInBuildSettings);
 	}

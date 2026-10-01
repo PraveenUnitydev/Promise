@@ -5,7 +5,7 @@
 
 using UnityEngine;
 
-public class PushableAndPullable : MonoBehaviour
+public class PushableAndPullable : MonoBehaviour, IResettable
 {
 	[SerializeField] float distance;
 	[SerializeField] LayerMask boxMask;
@@ -14,33 +14,73 @@ public class PushableAndPullable : MonoBehaviour
 	[SerializeField] PlayerController playerController;
     bool dragged = false;
     bool changeSide = false;
+    PlayerMovement movement;
+
+    public bool IsGrabbing => dragged;
+
+    private void Awake()
+    {
+        movement = GetComponent<PlayerMovement>();
+        if (playerController == null)
+            playerController = GetComponent<PlayerController>();
+    }
+
 	private void Update()
 	{
+        // Only on the ground and while the player is in control.
+        bool canGrab = !GameManagerPk._isPaused
+            && (movement == null || !movement._freeze)
+            && (playerController == null || playerController.m_Grounded);
+
+        if (dragged)
+        {
+            if (!GameInput.GrabHeld || !canGrab)
+                Release();
+            return;
+        }
+
+        if (!canGrab || !GameInput.GrabHeld)
+            return;
+
+        // Holding Grab while walking into a box grabs it, as well as pressing Grab next to one.
         Physics2D.queriesStartInColliders = false;
 		RaycastHit2D hit = Physics2D.Raycast(rayPushable.position, Vector2.right * transform.localScale.x, distance, boxMask);
-		if (hit.collider != null&&GameInput.GrabPressed&&!dragged)
+		if (hit.collider != null && hit.rigidbody != null)
 		{
             dragged = true;
-			box = hit.collider.gameObject;
+			box = hit.rigidbody.gameObject;
 
             box.GetComponent<Rigidbody2D>().mass = 1;
-            box.gameObject.AddComponent<FixedJoint2D>();
-            box.GetComponent<FixedJoint2D>().connectedBody = this.GetComponent<Rigidbody2D>();
-           // playerController.;
-            Debug.Log("Grabbing");
-           // ChangeSide(changeSide);
+            var joint = box.AddComponent<FixedJoint2D>();
+            joint.connectedBody = GetComponent<Rigidbody2D>();
 		}
-        else if (!GameInput.GrabHeld&&dragged)
+    }
+
+    void Release()
+    {
+        dragged = false;
+        if (box == null)
+            return;
+        var joint = box.GetComponent<FixedJoint2D>();
+        if (joint != null)
         {
-            dragged = false;
-            box.GetComponent<FixedJoint2D>().connectedBody = null;
-            box.GetComponent<Rigidbody2D>().mass = 500;
-          //  playerController.Pushing = false;
-            Destroy(box.gameObject.GetComponent<FixedJoint2D>());
+            joint.connectedBody = null;
+            Destroy(joint);
         }
+        box.GetComponent<Rigidbody2D>().mass = 500;
+    }
+
+    // Let go of the box on respawn, before the player and box are moved back.
+    public void CaptureState() { }
+    public void RestoreState()
+    {
+        if (dragged)
+            Release();
     }
 	private void OnDrawGizmos()
 	{
+		if (rayPushable == null)
+			return;
 		Gizmos.color = Color.red;
 		Gizmos.DrawLine(rayPushable.position, (Vector2)rayPushable.position + Vector2.right * transform.localScale.x * distance);
 	}
